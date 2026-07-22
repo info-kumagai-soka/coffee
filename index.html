@@ -6,32 +6,58 @@
 <title>コーヒー抽出記録ノート</title>
 <style>
   :root {
-    --bg: #f7f2ec;
-    --surface: #ffffff;
-    --text: #2b1d14;
-    --text-muted: #7a6a5c;
-    --border: #e5d9cc;
-    --accent: #6f4e37;
-    --accent-light: #a9765a;
-    --accent-contrast: #ffffff;
-    --danger: #b3453b;
-    --chip-bg: #efe3d6;
-    --shadow: 0 2px 8px rgba(60, 40, 20, 0.08);
+    --bg: #e8e1d2;
+    --surface: #faf7f0;
+    --text: #29241f;
+    --text-muted: #83786a;
+    --border: #d6cab2;
+    --accent: #3d6b60;
+    --accent-light: #6b9a8c;
+    --accent-contrast: #f5f8f6;
+    --danger: #a8452f;
+    --chip-bg: #ddd0b9;
+    --shadow: 0 2px 8px rgba(50, 40, 20, 0.1);
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #1c1512;
-      --surface: #2a201b;
-      --text: #f1e6da;
-      --text-muted: #b7a493;
-      --border: #40312a;
-      --accent: #c8996f;
-      --accent-light: #a9765a;
-      --accent-contrast: #1c1512;
-      --danger: #e08579;
-      --chip-bg: #3a2c24;
-      --shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      --bg: #1a1712;
+      --surface: #252019;
+      --text: #ece5d7;
+      --text-muted: #b0a48f;
+      --border: #3a3327;
+      --accent: #7fb3a4;
+      --accent-light: #5c8d7e;
+      --accent-contrast: #10201b;
+      --danger: #e08a76;
+      --chip-bg: #322b20;
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
     }
+  }
+  :root[data-theme="light"] {
+    --bg: #e8e1d2;
+    --surface: #faf7f0;
+    --text: #29241f;
+    --text-muted: #83786a;
+    --border: #d6cab2;
+    --accent: #3d6b60;
+    --accent-light: #6b9a8c;
+    --accent-contrast: #f5f8f6;
+    --danger: #a8452f;
+    --chip-bg: #ddd0b9;
+    --shadow: 0 2px 8px rgba(50, 40, 20, 0.1);
+  }
+  :root[data-theme="dark"] {
+    --bg: #1a1712;
+    --surface: #252019;
+    --text: #ece5d7;
+    --text-muted: #b0a48f;
+    --border: #3a3327;
+    --accent: #7fb3a4;
+    --accent-light: #5c8d7e;
+    --accent-contrast: #10201b;
+    --danger: #e08a76;
+    --chip-bg: #322b20;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
   }
   * { box-sizing: border-box; }
   body {
