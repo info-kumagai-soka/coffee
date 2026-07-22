@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>コーヒー抽出記録ノート</title>
+<style>
+  :root {
+    --bg: #f7f2ec;
+    --surface: #ffffff;
+    --text: #2b1d14;
+    --text-muted: #7a6a5c;
+    --border: #e5d9cc;
+    --accent: #6f4e37;
+    --accent-light: #a9765a;
+    --accent-contrast: #ffffff;
+    --danger: #b3453b;
+    --chip-bg: #efe3d6;
+    --shadow: 0 2px 8px rgba(60, 40, 20, 0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1512;
+      --surface: #2a201b;
+      --text: #f1e6da;
+      --text-muted: #b7a493;
+      --border: #40312a;
+      --accent: #c8996f;
+      --accent-light: #a9765a;
+      --accent-contrast: #1c1512;
+      --danger: #e08579;
+      --chip-bg: #3a2c24;
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  header {
+    padding: 20px 16px 8px;
+    text-align: center;
+  }
+  header h1 {
+    margin: 0 0 4px;
+    font-size: 1.4rem;
+    letter-spacing: 0.02em;
+  }
+  header p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+  nav {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    padding: 12px 16px;
+    flex-wrap: wrap;
+  }
+  nav button {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    padding: 8px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+  nav button.active {
+    background: var(--accent);
+    color: var(--accent-contrast);
+    border-color: var(--accent);
+  }
+  main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 16px 60px;
+  }
+  section.view { display: none; }
+  section.view.active { display: block; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+  .card h2 {
+    margin-top: 0;
+    font-size: 1.05rem;
+  }
+  .field {
+    margin-bottom: 14px;
+  }
+  .field label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .field input[type="text"],
+  .field input[type="number"],
+  .field input[type="date"],
+  .field select,
+  .field textarea {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .field textarea { resize: vertical; min-height: 60px; }
+  .row2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .row3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+  .stars {
+    display: flex;
+    gap: 4px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  .stars span { color: var(--border); }
+  .stars span.filled { color: var(--accent); }
+  .btn {
+    display: inline-block;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    background: var(--accent);
+    color: var(--accent-contrast);
+  }
+  .btn.secondary {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn.danger {
+    background: transparent;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+  }
+  .btn-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .record {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .record-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .record-top strong { font-size: 1rem; }
+  .record-date { font-size: 0.78rem; color: var(--text-muted); }
+  .record-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 8px 0;
+  }
+  .chip {
+    background: var(--chip-bg);
+    color: var(--text);
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+  }
+  .record-notes {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    white-space: pre-wrap;
+  }
+  .record-actions {
+    margin-top: 8px;
+    display: flex;
+    gap: 8px;
+  }
+  .record-actions button {
+    font-size: 0.78rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+  .empty {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 30px 10px;
+    font-size: 0.9rem;
+  }
+  select.bean-filter {
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    margin-bottom: 12px;
+    width: 100%;
+  }
+  .bean-summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .bean-summary-header h3 { margin: 0; font-size: 1.05rem; }
+  .bean-summary-header span { color: var(--text-muted); font-size: 0.82rem; }
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin: 10px 0;
+  }
+  .stat {
+    background: var(--chip-bg);
+    border-radius: 8px;
+    padding: 8px;
+    text-align: center;
+  }
+  .stat .value { font-size: 1.05rem; font-weight: 600; }
+  .stat .label { font-size: 0.7rem; color: var(--text-muted); }
+  details.bean-records summary {
+    cursor: pointer;
+    font-size: 0.82rem;
+    color: var(--accent-light);
+    margin-top: 6px;
+  }
+  footer.io {
+    text-align: center;
+    padding: 10px 0 30px;
+  }
+  footer.io .btn.secondary { font-size: 0.8rem; padding: 6px 12px; }
+  @media (max-width: 480px) {
+    .row3 { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>☕ コーヒー抽出記録ノート</h1>
+  <p>豆・挽き具合・蒸らし/抽出時間・湯量・風味を記録して振り返る</p>
+</header>
+
+<nav>
+  <button data-view="add" class="active">記録を追加</button>
+  <button data-view="list">記録一覧</button>
+  <button data-view="summary">豆ごとの集計</button>
+</nav>
+
+<main>
+  <!-- 追加フォーム -->
+  <section class="view active" id="view-add">
+    <div class="card">
+      <h2 id="form-title">記録を追加</h2>
+      <form id="record-form">
+        <input type="hidden" id="record-id" />
+        <div class="row2">
+          <div class="field">
+            <label for="f-date">日付</label>
+            <input type="date" id="f-date" required />
+          </div>
+          <div class="field">
+            <label for="f-bean">コーヒー豆</label>
+            <input type="text" id="f-bean" list="bean-list" placeholder="例: エチオピア イルガチェフェ" required />
+            <datalist id="bean-list"></datalist>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="f-grind">挽き具合</label>
+          <select id="f-grind">
+            <option value="極細挽き">極細挽き(エスプレッソ)</option>
+            <option value="細挽き">細挽き</option>
+            <option value="中細挽き" selected>中細挽き(ペーパードリップ)</option>
+            <option value="中挽き">中挽き</option>
+            <option value="中粗挽き">中粗挽き(フレンチプレス)</option>
+            <option value="粗挽き">粗挽き</option>
+            <option value="custom">その他(自由入力)</option>
+          </select>
+          <input type="text" id="f-grind-custom" placeholder="挽き具合を入力" style="margin-top:8px; display:none;" />
+        </div>
+
+        <div class="row3">
+          <div class="field">
+            <label for="f-bloom">蒸らし時間(秒)</label>
+            <input type="number" id="f-bloom" min="0" step="1" placeholder="30" />
+          </div>
+          <div class="field">
+            <label for="f-extract">抽出時間(秒)</label>
+            <input type="number" id="f-extract" min="0" step="1" placeholder="150" />
+          </div>
+          <div class="field">
+            <label for="f-water">湯量(ml)</label>
+            <input type="number" id="f-water" min="0" step="1" placeholder="200" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="f-flavor">風味・メモ</label>
+          <textarea id="f-flavor" placeholder="例: 華やかな酸味、後味にベリーの甘さ"></textarea>
+        </div>
+
+        <div class="field">
+          <label>総合評価</label>
+          <div class="stars" id="f-rating" data-value="0">
+            <span data-star="1">★</span><span data-star="2">★</span><span data-star="3">★</span><span data-star="4">★</span><span data-star="5">★</span>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button type="submit" class="btn" id="submit-btn">記録を保存</button>
+          <button type="button" class="btn secondary" id="cancel-edit" style="display:none;">キャンセル</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- 一覧 -->
+  <section class="view" id="view-list">
+    <div class="card">
+      <h2>記録一覧</h2>
+      <select class="bean-filter" id="list-filter">
+        <option value="">すべての豆を表示</option>
+      </select>
+      <div id="record-list"></div>
+    </div>
+  </section>
+
+  <!-- 集計 -->
+  <section class="view" id="view-summary">
+    <div id="summary-list"></div>
+  </section>
+
+  <footer class="io">
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn secondary" id="export-btn">JSONエクスポート</button>
+      <button class="btn secondary" id="import-btn">JSONインポート</button>
+      <input type="file" id="import-file" accept="application/json" style="display:none;" />
+    </div>
+  </footer>
+</main>
+
+<script>
+(function () {
+  const STORAGE_KEY = "coffeeLogRecords";
+  const GRIND_OPTIONS = ["極細挽き", "細挽き", "中細挽き", "中挽き", "中粗挽き", "粗挽き"];
+
+  /** @type {Array<Object>} */
+  let records = loadRecords();
+  let editingId = null;
+
+  function loadRecords() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      console.error("記録の読み込みに失敗しました", e);
+      return [];
+    }
+  }
+
+  function saveRecords() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  }
+
+  function uid() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  }
+
+  // ---------- ナビゲーション ----------
+  const navButtons = document.querySelectorAll("nav button");
+  const views = {
+    add: document.getElementById("view-add"),
+    list: document.getElementById("view-list"),
+    summary: document.getElementById("view-summary"),
+  };
+  navButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      navButtons.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      Object.values(views).forEach((v) => v.classList.remove("active"));
+      views[btn.dataset.view].classList.add("active");
+      if (btn.dataset.view === "list") renderList();
+      if (btn.dataset.view === "summary") renderSummary();
+    });
+  });
+
+  // ---------- フォーム ----------
+  const form = document.getElementById("record-form");
+  const dateInput = document.getElementById("f-date");
+  const beanInput = document.getElementById("f-bean");
+  const grindSelect = document.getElementById("f-grind");
+  const grindCustom = document.getElementById("f-grind-custom");
+  const bloomInput = document.getElementById("f-bloom");
+  const extractInput = document.getElementById("f-extract");
+  const waterInput = document.getElementById("f-water");
+  const flavorInput = document.getElementById("f-flavor");
+  const ratingWidget = document.getElementById("f-rating");
+  const submitBtn = document.getElementById("submit-btn");
+  const cancelBtn = document.getElementById("cancel-edit");
+  const formTitle = document.getElementById("form-title");
+
+  dateInput.value = new Date().toISOString().slice(0, 10);
+
+  grindSelect.addEventListener("change", () => {
+    grindCustom.style.display = grindSelect.value === "custom" ? "block" : "none";
+  });
+
+  ratingWidget.querySelectorAll("span").forEach((star) => {
+    star.addEventListener("click", () => {
+      const val = Number(star.dataset.star);
+      ratingWidget.dataset.value = ratingWidget.dataset.value === String(val) ? "0" : String(val);
+      paintStars(ratingWidget);
+    });
+  });
+
+  function paintStars(widget) {
+    const val = Number(widget.dataset.value);
+    widget.querySelectorAll("span").forEach((s) => {
+      s.classList.toggle("filled", Number(s.dataset.star) <= val);
+    });
+  }
+
+  function resetForm() {
+    editingId = null;
+    form.reset();
+    document.getElementById("record-id").value = "";
+    dateInput.value = new Date().toISOString().slice(0, 10);
+    grindSelect.value = "中細挽き";
+    grindCustom.style.display = "none";
+    grindCustom.value = "";
+    ratingWidget.dataset.value = "0";
+    paintStars(ratingWidget);
+    submitBtn.textContent = "記録を保存";
+    cancelBtn.style.display = "none";
+    formTitle.textContent = "記録を追加";
+  }
+
+  cancelBtn.addEventListener("click", resetForm);
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const grind = grindSelect.value === "custom" ? (grindCustom.value.trim() || "その他") : grindSelect.value;
+    const beanName = beanInput.value.trim();
+    if (!beanName) return;
+
+    const record = {
+      id: editingId || uid(),
+      date: dateInput.value,
+      bean: beanName,
+      grind,
+      bloomSeconds: bloomInput.value === "" ? null : Number(bloomInput.value),
+      extractSeconds: extractInput.value === "" ? null : Number(extractInput.value),
+      waterMl: waterInput.value === "" ? null : Number(waterInput.value),
+      flavor: flavorInput.value.trim(),
+      rating: Number(ratingWidget.dataset.value) || 0,
+    };
+
+    if (editingId) {
+      const idx = records.findIndex((r) => r.id === editingId);
+      if (idx !== -1) records[idx] = record;
+    } else {
+      records.push(record);
+    }
+    saveRecords();
+    resetForm();
+    refreshBeanList();
+    renderList();
+    renderSummary();
+  });
+
+  function startEdit(id) {
+    const r = records.find((rec) => rec.id === id);
+    if (!r) return;
+    editingId = id;
+    document.getElementById("record-id").value = id;
+    dateInput.value = r.date;
+    beanInput.value = r.bean;
+    if (GRIND_OPTIONS.includes(r.grind)) {
+      grindSelect.value = r.grind;
+      grindCustom.style.display = "none";
+    } else {
+      grindSelect.value = "custom";
+      grindCustom.style.display = "block";
+      grindCustom.value = r.grind;
+    }
+    bloomInput.value = r.bloomSeconds ?? "";
+    extractInput.value = r.extractSeconds ?? "";
+    waterInput.value = r.waterMl ?? "";
+    flavorInput.value = r.flavor || "";
+    ratingWidget.dataset.value = String(r.rating || 0);
+    paintStars(ratingWidget);
+    submitBtn.textContent = "更新を保存";
+    cancelBtn.style.display = "inline-block";
+    formTitle.textContent = "記録を編集";
+
+    navButtons.forEach((b) => b.classList.remove("active"));
+    document.querySelector('nav button[data-view="add"]').classList.add("active");
+    Object.values(views).forEach((v) => v.classList.remove("active"));
+    views.add.classList.add("active");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function deleteRecord(id) {
+    if (!confirm("この記録を削除しますか?")) return;
+    records = records.filter((r) => r.id !== id);
+    saveRecords();
+    refreshBeanList();
+    renderList();
+    renderSummary();
+  }
+
+  // ---------- 豆リスト(オートコンプリート & フィルタ) ----------
+  function getBeanNames() {
+    return Array.from(new Set(records.map((r) => r.bean))).sort((a, b) => a.localeCompare(b, "ja"));
+  }
+
+  function refreshBeanList() {
+    const beans = getBeanNames();
+    const datalist = document.getElementById("bean-list");
+    datalist.innerHTML = beans.map((b) => `<option value="${escapeHtml(b)}"></option>`).join("");
+
+    const filter = document.getElementById("list-filter");
+    const current = filter.value;
+    filter.innerHTML = '<option value="">すべての豆を表示</option>' +
+      beans.map((b) => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join("");
+    if (beans.includes(current)) filter.value = current;
+  }
+
+  document.getElementById("list-filter").addEventListener("change", renderList);
+
+  // ---------- 一覧表示 ----------
+  function formatMeta(r) {
+    const chips = [];
+    chips.push(`挽き: ${escapeHtml(r.grind || "-")}`);
+    if (r.bloomSeconds != null) chips.push(`蒸らし ${r.bloomSeconds}秒`);
+    if (r.extractSeconds != null) chips.push(`抽出 ${r.extractSeconds}秒`);
+    if (r.waterMl != null) chips.push(`湯量 ${r.waterMl}ml`);
+    if (r.rating) chips.push(`評価 ${"★".repeat(r.rating)}${"☆".repeat(5 - r.rating)}`);
+    return chips;
+  }
+
+  function renderList() {
+    const container = document.getElementById("record-list");
+    const filterVal = document.getElementById("list-filter").value;
+    const filtered = records
+      .filter((r) => !filterVal || r.bean === filterVal)
+      .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+
+    if (filtered.length === 0) {
+      container.innerHTML = '<div class="empty">まだ記録がありません。「記録を追加」から入力してください。</div>';
+      return;
+    }
+
+    container.innerHTML = filtered.map((r) => `
+      <div class="record">
+        <div class="record-top">
+          <strong>${escapeHtml(r.bean)}</strong>
+          <span class="record-date">${escapeHtml(r.date)}</span>
+        </div>
+        <div class="record-meta">
+          ${formatMeta(r).map((c) => `<span class="chip">${c}</span>`).join("")}
+        </div>
+        ${r.flavor ? `<div class="record-notes">${escapeHtml(r.flavor)}</div>` : ""}
+        <div class="record-actions">
+          <button data-edit="${r.id}">編集</button>
+          <button data-delete="${r.id}">削除</button>
+        </div>
+      </div>
+    `).join("");
+
+    container.querySelectorAll("[data-edit]").forEach((btn) => {
+      btn.addEventListener("click", () => startEdit(btn.dataset.edit));
+    });
+    container.querySelectorAll("[data-delete]").forEach((btn) => {
+      btn.addEventListener("click", () => deleteRecord(btn.dataset.delete));
+    });
+  }
+
+  // ---------- 集計表示 ----------
+  function average(nums) {
+    const valid = nums.filter((n) => n != null && !Number.isNaN(n));
+    if (valid.length === 0) return null;
+    return valid.reduce((a, b) => a + b, 0) / valid.length;
+  }
+
+  function mostCommon(values) {
+    const counts = {};
+    values.forEach((v) => { if (v) counts[v] = (counts[v] || 0) + 1; });
+    let best = null, bestCount = 0;
+    Object.entries(counts).forEach(([k, c]) => { if (c > bestCount) { best = k; bestCount = c; } });
+    return best;
+  }
+
+  function fmt(num, unit) {
+    if (num == null) return "-";
+    return `${Math.round(num * 10) / 10}${unit}`;
+  }
+
+  function renderSummary() {
+    const container = document.getElementById("summary-list");
+    const beans = getBeanNames();
+
+    if (beans.length === 0) {
+      container.innerHTML = '<div class="card"><div class="empty">まだ記録がありません。記録を追加すると豆ごとの集計が表示されます。</div></div>';
+      return;
+    }
+
+    const groups = beans.map((bean) => {
+      const recs = records.filter((r) => r.bean === bean).sort((a, b) => (a.date < b.date ? 1 : -1));
+      return {
+        bean,
+        count: recs.length,
+        avgRating: average(recs.map((r) => r.rating)),
+        avgBloom: average(recs.map((r) => r.bloomSeconds)),
+        avgExtract: average(recs.map((r) => r.extractSeconds)),
+        avgWater: average(recs.map((r) => r.waterMl)),
+        commonGrind: mostCommon(recs.map((r) => r.grind)),
+        flavors: recs.filter((r) => r.flavor).map((r) => ({ date: r.date, flavor: r.flavor })),
+        recs,
+      };
+    }).sort((a, b) => b.count - a.count);
+
+    container.innerHTML = groups.map((g) => `
+      <div class="card">
+        <div class="bean-summary-header">
+          <h3>${escapeHtml(g.bean)}</h3>
+          <span>${g.count}件の記録</span>
+        </div>
+        <div class="stat-grid">
+          <div class="stat"><div class="value">${g.avgRating != null ? "★".repeat(Math.round(g.avgRating)) : "-"}</div><div class="label">平均評価</div></div>
+          <div class="stat"><div class="value">${g.commonGrind || "-"}</div><div class="label">よく使う挽き具合</div></div>
+          <div class="stat"><div class="value">${fmt(g.avgWater, "ml")}</div><div class="label">平均湯量</div></div>
+          <div class="stat"><div class="value">${fmt(g.avgBloom, "秒")}</div><div class="label">平均蒸らし時間</div></div>
+          <div class="stat"><div class="value">${fmt(g.avgExtract, "秒")}</div><div class="label">平均抽出時間</div></div>
+          <div class="stat"><div class="value">${g.count}</div><div class="label">記録件数</div></div>
+        </div>
+        ${g.flavors.length ? `
+        <details class="bean-records">
+          <summary>風味メモを見る (${g.flavors.length}件)</summary>
+          ${g.flavors.map((f) => `<div class="record-notes"><strong>${escapeHtml(f.date)}:</strong> ${escapeHtml(f.flavor)}</div>`).join("")}
+        </details>` : ""}
+      </div>
+    `).join("");
+  }
+
+  // ---------- エクスポート / インポート ----------
+  document.getElementById("export-btn").addEventListener("click", () => {
+    const blob = new Blob([JSON.stringify(records, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `coffee-records-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  const importFile = document.getElementById("import-file");
+  document.getElementById("import-btn").addEventListener("click", () => importFile.click());
+  importFile.addEventListener("change", () => {
+    const file = importFile.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result);
+        if (!Array.isArray(data)) throw new Error("形式が不正です");
+        const merge = confirm("既存の記録に追加しますか？(キャンセルで置き換え)");
+        records = merge ? records.concat(data) : data;
+        saveRecords();
+        refreshBeanList();
+        renderList();
+        renderSummary();
+        alert("インポートが完了しました");
+      } catch (e) {
+        alert("インポートに失敗しました: " + e.message);
+      }
+      importFile.value = "";
+    };
+    reader.readAsText(file);
+  });
+
+  // ---------- ユーティリティ ----------
+  function escapeHtml(str) {
+    return String(str ?? "").replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+    }[c]));
+  }
+
+  // ---------- 初期化 ----------
+  refreshBeanList();
+  renderList();
+  renderSummary();
+})();
+</script>
+</body>
+</html>
