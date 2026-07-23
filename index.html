@@ -184,6 +184,27 @@
     color: var(--text-muted);
     font-size: 0.68rem;
   }
+  .step-col-headers {
+    display: grid;
+    grid-template-columns: 84px 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .step-col-headers span:first-child { visibility: hidden; }
+  .bloom-check {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+  .bloom-check input { margin: 0; cursor: pointer; }
   .step-row select {
     width: 100%;
     padding: 7px 8px;
@@ -391,6 +412,7 @@
 
         <div class="steps-wrap">
           <label>注湯ステップ(蒸らし+注湯 全5ステップ)</label>
+          <div class="step-col-headers"><span></span><span>湯量</span><span>抽出時間</span></div>
           <div id="step-rows"></div>
           <div class="steps-totals">
             <span>合計抽出時間: <strong id="total-time">0秒</strong></span>
@@ -451,7 +473,7 @@
   const TIME_OPTIONS = [0, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 75, 90, 105, 120, 150, 180, 210, 240, 270, 300];
   const WATER_OPTIONS = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 180, 200, 220, 250, 300];
   const STEP_DEFS = [
-    { label: "ステップ1", sub: "蒸らし" },
+    { label: "ステップ1", sub: null },
     { label: "ステップ2", sub: "注湯" },
     { label: "ステップ3", sub: "注湯" },
     { label: "ステップ4", sub: "注湯" },
@@ -550,14 +572,26 @@
   function renderStepRows() {
     stepRowsContainer.innerHTML = STEP_DEFS.map((step, i) => `
       <div class="step-row">
-        <div class="step-label">${step.label}<small>${step.sub}</small></div>
-        <select data-step="${i}" data-field="time">${buildOptions(TIME_OPTIONS, "秒")}</select>
+        <div class="step-label">
+          ${step.label}
+          ${i === 0
+            ? `<small id="step0-sublabel">蒸らし</small><label class="bloom-check"><input type="checkbox" id="f-has-bloom" checked /> 蒸らしを行う</label>`
+            : `<small>${step.sub}</small>`}
+        </div>
         <select data-step="${i}" data-field="water">${buildOptions(WATER_OPTIONS, "ml")}</select>
+        <select data-step="${i}" data-field="time">${buildOptions(TIME_OPTIONS, "秒")}</select>
       </div>
     `).join("");
     stepRowsContainer.querySelectorAll("select").forEach((sel) => {
       sel.addEventListener("change", updateTotals);
     });
+    document.getElementById("f-has-bloom").addEventListener("change", updateBloomLabel);
+    updateBloomLabel();
+  }
+
+  function updateBloomLabel() {
+    const checked = document.getElementById("f-has-bloom").checked;
+    document.getElementById("step0-sublabel").textContent = checked ? "蒸らし" : "注湯";
   }
 
   function getStepsFromForm() {
@@ -601,6 +635,8 @@
     grindCustom.value = "";
     doseInput.value = "";
     setStepsToForm(DEFAULT_STEPS);
+    document.getElementById("f-has-bloom").checked = true;
+    updateBloomLabel();
     ratingWidget.dataset.value = "0";
     paintStars(ratingWidget);
     submitBtn.textContent = "記録を保存";
@@ -617,6 +653,7 @@
     if (!beanName) return;
 
     const steps = getStepsFromForm();
+    const hasBloom = document.getElementById("f-has-bloom").checked;
     const record = {
       id: editingId || uid(),
       date: dateInput.value,
@@ -624,7 +661,8 @@
       grind,
       doseGrams: doseInput.value === "" ? null : Number(doseInput.value),
       steps,
-      bloomSeconds: steps[0].time,
+      hasBloom,
+      bloomSeconds: hasBloom ? steps[0].time : null,
       extractSeconds: steps.reduce((sum, s) => sum + s.time, 0),
       waterMl: steps.reduce((sum, s) => sum + s.water, 0),
       flavor: flavorInput.value.trim(),
@@ -665,6 +703,8 @@
     } else {
       setStepsToForm([{ time: r.bloomSeconds || 0, water: r.waterMl || 0 }, { time: 0, water: 0 }, { time: 0, water: 0 }, { time: 0, water: 0 }, { time: 0, water: 0 }]);
     }
+    document.getElementById("f-has-bloom").checked = r.hasBloom !== false;
+    updateBloomLabel();
     flavorInput.value = r.flavor || "";
     ratingWidget.dataset.value = String(r.rating || 0);
     paintStars(ratingWidget);
@@ -714,8 +754,14 @@
     if (r.doseGrams != null) chips.push(`豆量 ${r.doseGrams}g`);
     if (r.extractSeconds != null) chips.push(`合計抽出時間 ${r.extractSeconds}秒`);
     if (r.waterMl != null) chips.push(`総湯量 ${r.waterMl}ml`);
+    if (r.hasBloom === false) chips.push("蒸らしなし");
     if (r.rating) chips.push(`評価 ${"★".repeat(r.rating)}${"☆".repeat(5 - r.rating)}`);
     return chips;
+  }
+
+  function stepSubLabel(r, i) {
+    if (i === 0) return r.hasBloom === false ? "注湯" : "蒸らし";
+    return STEP_DEFS[i].sub;
   }
 
   function formatSteps(r) {
@@ -724,7 +770,7 @@
       .map((s, i) => ({ ...s, i }))
       .filter((s) => s.time > 0 || s.water > 0);
     if (used.length === 0) return "";
-    return used.map((s) => `${STEP_DEFS[s.i].label}(${STEP_DEFS[s.i].sub}) ${s.time}秒 / ${s.water}ml`).join(" → ");
+    return used.map((s) => `${STEP_DEFS[s.i].label}(${stepSubLabel(r, s.i)}) 湯量${s.water}ml / ${s.time}秒`).join(" → ");
   }
 
   function renderList() {
