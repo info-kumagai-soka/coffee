@@ -282,6 +282,11 @@
     border: 1px solid var(--danger);
     color: var(--danger);
   }
+  .temp-btn.active {
+    background: var(--accent);
+    color: var(--accent-contrast);
+    border-color: var(--accent);
+  }
   .btn-row {
     display: flex;
     gap: 8px;
@@ -418,18 +423,39 @@
           </div>
         </div>
 
+        <div class="row2">
+          <div class="field">
+            <label for="f-grind">挽き具合</label>
+            <select id="f-grind">
+              <option value="極細挽き">極細挽き</option>
+              <option value="細挽き">細挽き</option>
+              <option value="中細挽き" selected>中細挽き</option>
+              <option value="中挽き">中挽き</option>
+              <option value="中粗挽き">中粗挽き</option>
+              <option value="粗挽き">粗挽き</option>
+              <option value="custom">その他(自由入力)</option>
+            </select>
+            <input type="text" id="f-grind-custom" placeholder="挽き具合を入力" style="margin-top:8px; display:none;" />
+          </div>
+          <div class="field">
+            <label for="f-method">抽出方法</label>
+            <select id="f-method">
+              <option value="ペーパードリップ" selected>ペーパードリップ</option>
+              <option value="ネルドリップ">ネルドリップ</option>
+              <option value="エスプレッソ">エスプレッソ</option>
+              <option value="フレンチプレス">フレンチプレス</option>
+              <option value="サイフォン">サイフォン</option>
+              <option value="水出し">水出し</option>
+            </select>
+          </div>
+        </div>
+
         <div class="field">
-          <label for="f-grind">挽き具合</label>
-          <select id="f-grind">
-            <option value="極細挽き">極細挽き(エスプレッソ)</option>
-            <option value="細挽き">細挽き</option>
-            <option value="中細挽き" selected>中細挽き(ペーパードリップ)</option>
-            <option value="中挽き">中挽き</option>
-            <option value="中粗挽き">中粗挽き(フレンチプレス)</option>
-            <option value="粗挽き">粗挽き</option>
-            <option value="custom">その他(自由入力)</option>
-          </select>
-          <input type="text" id="f-grind-custom" placeholder="挽き具合を入力" style="margin-top:8px; display:none;" />
+          <label>温度分類</label>
+          <div class="btn-row" id="f-temp" data-value="ホット">
+            <button type="button" class="btn secondary temp-btn" data-temp="ホット">☕ ホット</button>
+            <button type="button" class="btn secondary temp-btn" data-temp="アイス">🧊 アイス</button>
+          </div>
         </div>
 
         <div class="field">
@@ -567,6 +593,8 @@
   const beanInput = document.getElementById("f-bean");
   const grindSelect = document.getElementById("f-grind");
   const grindCustom = document.getElementById("f-grind-custom");
+  const methodSelect = document.getElementById("f-method");
+  const tempWidget = document.getElementById("f-temp");
   const doseInput = document.getElementById("f-dose");
   const stepRowsContainer = document.getElementById("step-rows");
   const totalTimeEl = document.getElementById("total-time");
@@ -582,6 +610,20 @@
   grindSelect.addEventListener("change", () => {
     grindCustom.style.display = grindSelect.value === "custom" ? "block" : "none";
   });
+
+  function paintTemp() {
+    const val = tempWidget.dataset.value;
+    tempWidget.querySelectorAll(".temp-btn").forEach((b) => {
+      b.classList.toggle("active", b.dataset.temp === val);
+    });
+  }
+  tempWidget.querySelectorAll(".temp-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      tempWidget.dataset.value = btn.dataset.temp;
+      paintTemp();
+    });
+  });
+  paintTemp();
 
   ratingWidget.querySelectorAll("span").forEach((star) => {
     star.addEventListener("click", () => {
@@ -675,6 +717,9 @@
     grindSelect.value = "中細挽き";
     grindCustom.style.display = "none";
     grindCustom.value = "";
+    methodSelect.value = "ペーパードリップ";
+    tempWidget.dataset.value = "ホット";
+    paintTemp();
     doseInput.value = "";
     setStepsToForm(DEFAULT_STEPS);
     hasBloomCheckbox.checked = true;
@@ -703,6 +748,8 @@
       date: dateInput.value,
       bean: beanName,
       grind,
+      method: methodSelect.value,
+      temperature: tempWidget.dataset.value,
       doseGrams: doseInput.value === "" ? null : Number(doseInput.value),
       steps,
       hasBloom,
@@ -741,6 +788,9 @@
       grindCustom.style.display = "block";
       grindCustom.value = r.grind;
     }
+    methodSelect.value = r.method || "ペーパードリップ";
+    tempWidget.dataset.value = r.temperature || "ホット";
+    paintTemp();
     doseInput.value = r.doseGrams ?? "";
     if (Array.isArray(r.steps) && r.steps.length === 5) {
       setStepsToForm(r.steps);
@@ -796,6 +846,8 @@
   // ---------- 一覧表示 ----------
   function formatMeta(r) {
     const chips = [];
+    if (r.method) chips.push(`${escapeHtml(r.method)}`);
+    if (r.temperature) chips.push(`${r.temperature === "アイス" ? "🧊" : "☕"} ${escapeHtml(r.temperature)}`);
     chips.push(`挽き: ${escapeHtml(r.grind || "-")}`);
     if (r.doseGrams != null) chips.push(`豆量 ${r.doseGrams}g`);
     if (r.hasBloom === false) {
@@ -901,6 +953,9 @@
         avgWater: average(recs.map((r) => r.waterMl)),
         avgDose: average(recs.map((r) => r.doseGrams)),
         commonGrind: mostCommon(recs.map((r) => r.grind)),
+        commonMethod: mostCommon(recs.map((r) => r.method)),
+        hotCount: recs.filter((r) => r.temperature !== "アイス").length,
+        icedCount: recs.filter((r) => r.temperature === "アイス").length,
         flavors: recs.filter((r) => r.flavor).map((r) => ({ date: r.date, flavor: r.flavor })),
         recs,
       };
@@ -914,6 +969,8 @@
         </div>
         <div class="stat-grid">
           <div class="stat"><div class="value">${g.avgRating != null ? "★".repeat(Math.round(g.avgRating)) : "-"}</div><div class="label">平均評価</div></div>
+          <div class="stat"><div class="value">${g.commonMethod || "-"}</div><div class="label">よく使う抽出方法</div></div>
+          <div class="stat"><div class="value">☕${g.hotCount} / 🧊${g.icedCount}</div><div class="label">ホット / アイス</div></div>
           <div class="stat"><div class="value">${g.commonGrind || "-"}</div><div class="label">よく使う挽き具合</div></div>
           <div class="stat"><div class="value">${fmt(g.avgDose, "g")}</div><div class="label">平均豆量</div></div>
           <div class="stat"><div class="value">${fmt(g.avgWater, "ml")}</div><div class="label">平均総湯量</div></div>
