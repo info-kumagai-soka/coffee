@@ -155,6 +155,56 @@
     grid-template-columns: 1fr 1fr 1fr;
     gap: 12px;
   }
+  .steps-wrap {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 14px;
+  }
+  .steps-wrap > label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .step-row {
+    display: grid;
+    grid-template-columns: 84px 1fr 1fr;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .step-row:last-child { margin-bottom: 0; }
+  .step-row .step-label {
+    font-size: 0.8rem;
+    color: var(--text);
+  }
+  .step-row .step-label small {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.68rem;
+  }
+  .step-row select {
+    width: 100%;
+    padding: 7px 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.88rem;
+    font-family: inherit;
+  }
+  .steps-totals {
+    display: flex;
+    gap: 16px;
+    justify-content: flex-end;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border);
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  .steps-totals strong { color: var(--text); }
   .stars {
     display: flex;
     gap: 4px;
@@ -334,18 +384,17 @@
           <input type="text" id="f-grind-custom" placeholder="挽き具合を入力" style="margin-top:8px; display:none;" />
         </div>
 
-        <div class="row3">
-          <div class="field">
-            <label for="f-bloom">蒸らし時間(秒)</label>
-            <input type="number" id="f-bloom" min="0" step="1" placeholder="30" />
-          </div>
-          <div class="field">
-            <label for="f-extract">抽出時間(秒)</label>
-            <input type="number" id="f-extract" min="0" step="1" placeholder="150" />
-          </div>
-          <div class="field">
-            <label for="f-water">湯量(ml)</label>
-            <input type="number" id="f-water" min="0" step="1" placeholder="200" />
+        <div class="field">
+          <label for="f-dose">豆の量(g)</label>
+          <input type="number" id="f-dose" min="0" step="0.1" placeholder="15" />
+        </div>
+
+        <div class="steps-wrap">
+          <label>注湯ステップ(蒸らし+注湯 全5ステップ)</label>
+          <div id="step-rows"></div>
+          <div class="steps-totals">
+            <span>合計抽出時間: <strong id="total-time">0秒</strong></span>
+            <span>総湯量: <strong id="total-water">0ml</strong></span>
           </div>
         </div>
 
@@ -399,6 +448,23 @@
   const STORAGE_KEY = "coffeeLogRecords";
   const GRIND_OPTIONS = ["極細挽き", "細挽き", "中細挽き", "中挽き", "中粗挽き", "粗挽き"];
 
+  const TIME_OPTIONS = [0, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 75, 90, 105, 120, 150, 180, 210, 240, 270, 300];
+  const WATER_OPTIONS = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 180, 200, 220, 250, 300];
+  const STEP_DEFS = [
+    { label: "ステップ1", sub: "蒸らし" },
+    { label: "ステップ2", sub: "注湯" },
+    { label: "ステップ3", sub: "注湯" },
+    { label: "ステップ4", sub: "注湯" },
+    { label: "ステップ5", sub: "注湯" },
+  ];
+  const DEFAULT_STEPS = [
+    { time: 30, water: 40 },
+    { time: 0, water: 0 },
+    { time: 0, water: 0 },
+    { time: 0, water: 0 },
+    { time: 0, water: 0 },
+  ];
+
   /** @type {Array<Object>} */
   let records = loadRecords();
   let editingId = null;
@@ -445,9 +511,10 @@
   const beanInput = document.getElementById("f-bean");
   const grindSelect = document.getElementById("f-grind");
   const grindCustom = document.getElementById("f-grind-custom");
-  const bloomInput = document.getElementById("f-bloom");
-  const extractInput = document.getElementById("f-extract");
-  const waterInput = document.getElementById("f-water");
+  const doseInput = document.getElementById("f-dose");
+  const stepRowsContainer = document.getElementById("step-rows");
+  const totalTimeEl = document.getElementById("total-time");
+  const totalWaterEl = document.getElementById("total-water");
   const flavorInput = document.getElementById("f-flavor");
   const ratingWidget = document.getElementById("f-rating");
   const submitBtn = document.getElementById("submit-btn");
@@ -475,6 +542,55 @@
     });
   }
 
+  // ---------- 注湯ステップ ----------
+  function buildOptions(values, unit) {
+    return values.map((v) => `<option value="${v}">${v === 0 ? `0${unit}(未使用)` : `${v}${unit}`}</option>`).join("");
+  }
+
+  function renderStepRows() {
+    stepRowsContainer.innerHTML = STEP_DEFS.map((step, i) => `
+      <div class="step-row">
+        <div class="step-label">${step.label}<small>${step.sub}</small></div>
+        <select data-step="${i}" data-field="time">${buildOptions(TIME_OPTIONS, "秒")}</select>
+        <select data-step="${i}" data-field="water">${buildOptions(WATER_OPTIONS, "ml")}</select>
+      </div>
+    `).join("");
+    stepRowsContainer.querySelectorAll("select").forEach((sel) => {
+      sel.addEventListener("change", updateTotals);
+    });
+  }
+
+  function getStepsFromForm() {
+    return STEP_DEFS.map((_, i) => ({
+      time: Number(stepRowsContainer.querySelector(`select[data-step="${i}"][data-field="time"]`).value),
+      water: Number(stepRowsContainer.querySelector(`select[data-step="${i}"][data-field="water"]`).value),
+    }));
+  }
+
+  function setStepsToForm(steps) {
+    STEP_DEFS.forEach((_, i) => {
+      const s = steps[i] || { time: 0, water: 0 };
+      const timeSel = stepRowsContainer.querySelector(`select[data-step="${i}"][data-field="time"]`);
+      const waterSel = stepRowsContainer.querySelector(`select[data-step="${i}"][data-field="water"]`);
+      timeSel.value = TIME_OPTIONS.includes(s.time) ? String(s.time) : String(closestOption(TIME_OPTIONS, s.time));
+      waterSel.value = WATER_OPTIONS.includes(s.water) ? String(s.water) : String(closestOption(WATER_OPTIONS, s.water));
+    });
+    updateTotals();
+  }
+
+  function closestOption(options, value) {
+    if (value == null || Number.isNaN(value)) return 0;
+    return options.reduce((best, opt) => (Math.abs(opt - value) < Math.abs(best - value) ? opt : best), options[0]);
+  }
+
+  function updateTotals() {
+    const steps = getStepsFromForm();
+    const totalTime = steps.reduce((sum, s) => sum + s.time, 0);
+    const totalWater = steps.reduce((sum, s) => sum + s.water, 0);
+    totalTimeEl.textContent = `${totalTime}秒`;
+    totalWaterEl.textContent = `${totalWater}ml`;
+  }
+
   function resetForm() {
     editingId = null;
     form.reset();
@@ -483,6 +599,8 @@
     grindSelect.value = "中細挽き";
     grindCustom.style.display = "none";
     grindCustom.value = "";
+    doseInput.value = "";
+    setStepsToForm(DEFAULT_STEPS);
     ratingWidget.dataset.value = "0";
     paintStars(ratingWidget);
     submitBtn.textContent = "記録を保存";
@@ -498,14 +616,17 @@
     const beanName = beanInput.value.trim();
     if (!beanName) return;
 
+    const steps = getStepsFromForm();
     const record = {
       id: editingId || uid(),
       date: dateInput.value,
       bean: beanName,
       grind,
-      bloomSeconds: bloomInput.value === "" ? null : Number(bloomInput.value),
-      extractSeconds: extractInput.value === "" ? null : Number(extractInput.value),
-      waterMl: waterInput.value === "" ? null : Number(waterInput.value),
+      doseGrams: doseInput.value === "" ? null : Number(doseInput.value),
+      steps,
+      bloomSeconds: steps[0].time,
+      extractSeconds: steps.reduce((sum, s) => sum + s.time, 0),
+      waterMl: steps.reduce((sum, s) => sum + s.water, 0),
       flavor: flavorInput.value.trim(),
       rating: Number(ratingWidget.dataset.value) || 0,
     };
@@ -538,9 +659,12 @@
       grindCustom.style.display = "block";
       grindCustom.value = r.grind;
     }
-    bloomInput.value = r.bloomSeconds ?? "";
-    extractInput.value = r.extractSeconds ?? "";
-    waterInput.value = r.waterMl ?? "";
+    doseInput.value = r.doseGrams ?? "";
+    if (Array.isArray(r.steps) && r.steps.length === 5) {
+      setStepsToForm(r.steps);
+    } else {
+      setStepsToForm([{ time: r.bloomSeconds || 0, water: r.waterMl || 0 }, { time: 0, water: 0 }, { time: 0, water: 0 }, { time: 0, water: 0 }, { time: 0, water: 0 }]);
+    }
     flavorInput.value = r.flavor || "";
     ratingWidget.dataset.value = String(r.rating || 0);
     paintStars(ratingWidget);
@@ -587,11 +711,20 @@
   function formatMeta(r) {
     const chips = [];
     chips.push(`挽き: ${escapeHtml(r.grind || "-")}`);
-    if (r.bloomSeconds != null) chips.push(`蒸らし ${r.bloomSeconds}秒`);
-    if (r.extractSeconds != null) chips.push(`抽出 ${r.extractSeconds}秒`);
-    if (r.waterMl != null) chips.push(`湯量 ${r.waterMl}ml`);
+    if (r.doseGrams != null) chips.push(`豆量 ${r.doseGrams}g`);
+    if (r.extractSeconds != null) chips.push(`合計抽出時間 ${r.extractSeconds}秒`);
+    if (r.waterMl != null) chips.push(`総湯量 ${r.waterMl}ml`);
     if (r.rating) chips.push(`評価 ${"★".repeat(r.rating)}${"☆".repeat(5 - r.rating)}`);
     return chips;
+  }
+
+  function formatSteps(r) {
+    if (!Array.isArray(r.steps)) return "";
+    const used = r.steps
+      .map((s, i) => ({ ...s, i }))
+      .filter((s) => s.time > 0 || s.water > 0);
+    if (used.length === 0) return "";
+    return used.map((s) => `${STEP_DEFS[s.i].label}(${STEP_DEFS[s.i].sub}) ${s.time}秒 / ${s.water}ml`).join(" → ");
   }
 
   function renderList() {
@@ -615,6 +748,7 @@
         <div class="record-meta">
           ${formatMeta(r).map((c) => `<span class="chip">${c}</span>`).join("")}
         </div>
+        ${formatSteps(r) ? `<div class="record-notes">${formatSteps(r)}</div>` : ""}
         ${r.flavor ? `<div class="record-notes">${escapeHtml(r.flavor)}</div>` : ""}
         <div class="record-actions">
           <button data-edit="${r.id}">編集</button>
@@ -669,6 +803,7 @@
         avgBloom: average(recs.map((r) => r.bloomSeconds)),
         avgExtract: average(recs.map((r) => r.extractSeconds)),
         avgWater: average(recs.map((r) => r.waterMl)),
+        avgDose: average(recs.map((r) => r.doseGrams)),
         commonGrind: mostCommon(recs.map((r) => r.grind)),
         flavors: recs.filter((r) => r.flavor).map((r) => ({ date: r.date, flavor: r.flavor })),
         recs,
@@ -684,9 +819,11 @@
         <div class="stat-grid">
           <div class="stat"><div class="value">${g.avgRating != null ? "★".repeat(Math.round(g.avgRating)) : "-"}</div><div class="label">平均評価</div></div>
           <div class="stat"><div class="value">${g.commonGrind || "-"}</div><div class="label">よく使う挽き具合</div></div>
-          <div class="stat"><div class="value">${fmt(g.avgWater, "ml")}</div><div class="label">平均湯量</div></div>
+          <div class="stat"><div class="value">${fmt(g.avgDose, "g")}</div><div class="label">平均豆量</div></div>
+          <div class="stat"><div class="value">${fmt(g.avgWater, "ml")}</div><div class="label">平均総湯量</div></div>
+          <div class="stat"><div class="value">${g.avgDose && g.avgWater ? `1:${Math.round((g.avgWater / g.avgDose) * 10) / 10}` : "-"}</div><div class="label">平均比率(豆:湯)</div></div>
           <div class="stat"><div class="value">${fmt(g.avgBloom, "秒")}</div><div class="label">平均蒸らし時間</div></div>
-          <div class="stat"><div class="value">${fmt(g.avgExtract, "秒")}</div><div class="label">平均抽出時間</div></div>
+          <div class="stat"><div class="value">${fmt(g.avgExtract, "秒")}</div><div class="label">平均合計抽出時間</div></div>
           <div class="stat"><div class="value">${g.count}</div><div class="label">記録件数</div></div>
         </div>
         ${g.flavors.length ? `
@@ -742,6 +879,8 @@
   }
 
   // ---------- 初期化 ----------
+  renderStepRows();
+  setStepsToForm(DEFAULT_STEPS);
   refreshBeanList();
   renderList();
   renderSummary();
