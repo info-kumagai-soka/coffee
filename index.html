@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>コーヒー抽出記録ノート</title>
+<title>コーヒー抽出記録＆在庫販売管理</title>
 <style>
   :root {
     --bg: #e8e1d2;
@@ -15,6 +15,7 @@
     --accent-light: #6b9a8c;
     --accent-contrast: #f5f8f6;
     --danger: #a8452f;
+    --warn: #ad7d1f;
     --chip-bg: #ddd0b9;
     --shadow: 0 2px 8px rgba(50, 40, 20, 0.1);
   }
@@ -29,6 +30,7 @@
       --accent-light: #5c8d7e;
       --accent-contrast: #10201b;
       --danger: #e08a76;
+      --warn: #d9a13f;
       --chip-bg: #322b20;
       --shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
     }
@@ -43,6 +45,7 @@
     --accent-light: #6b9a8c;
     --accent-contrast: #f5f8f6;
     --danger: #a8452f;
+    --warn: #ad7d1f;
     --chip-bg: #ddd0b9;
     --shadow: 0 2px 8px rgba(50, 40, 20, 0.1);
   }
@@ -56,6 +59,7 @@
     --accent-light: #5c8d7e;
     --accent-contrast: #10201b;
     --danger: #e08a76;
+    --warn: #d9a13f;
     --chip-bg: #322b20;
     --shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
   }
@@ -389,19 +393,105 @@
   @media (max-width: 480px) {
     .row3 { grid-template-columns: 1fr 1fr; }
   }
+
+  /* ---------- 業務管理タブ共通 ---------- */
+  .subtabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .subtabs button {
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    padding: 6px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  .subtabs button.active {
+    background: var(--accent);
+    color: var(--accent-contrast);
+    border-color: var(--accent);
+  }
+  .table-wrap { overflow-x: auto; }
+  table.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  table.data-table th,
+  table.data-table td {
+    padding: 8px 6px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    white-space: nowrap;
+  }
+  table.data-table th {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  table.data-table tr.row-warn td { color: var(--warn); font-weight: 600; }
+  table.data-table tr.row-danger td { color: var(--danger); font-weight: 600; }
+  .badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    background: var(--chip-bg);
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .badge.warn { background: var(--warn); color: #fff; }
+  .badge.danger { background: var(--danger); color: #fff; }
+  .badge.ok { background: var(--accent); color: var(--accent-contrast); }
+  .row-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .row-actions button, .row-actions select {
+    font-size: 0.76rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+  }
+  .section-title h3 { margin: 0; font-size: 1rem; }
+  .hint { font-size: 0.78rem; color: var(--text-muted); margin: 4px 0 12px; }
+  .form-msg { font-size: 0.82rem; margin-top: 8px; }
+  .form-msg.error { color: var(--danger); }
+  .form-msg.success { color: var(--accent); }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>☕ コーヒー抽出記録ノート</h1>
-  <p>豆・挽き具合・蒸らし/抽出時間・湯量・風味を記録して振り返る</p>
+  <h1>☕ コーヒー抽出記録＆在庫販売管理</h1>
+  <p>豆の記録から仕入・在庫・賞味期限・販売・配送・回収までをまとめて管理する</p>
 </header>
 
 <nav>
   <button data-view="add" class="active">記録を追加</button>
   <button data-view="list">記録一覧</button>
   <button data-view="summary">豆ごとの集計</button>
+</nav>
+<nav>
+  <button data-view="master">商品・取引先</button>
+  <button data-view="purchase">仕入</button>
+  <button data-view="inventory">在庫・賞味期限</button>
+  <button data-view="sales">販売</button>
+  <button data-view="delivery">配送</button>
+  <button data-view="collection">回収</button>
 </nav>
 
 <main>
@@ -516,6 +606,36 @@
     <div id="summary-list"></div>
   </section>
 
+  <!-- 商品・取引先マスタ -->
+  <section class="view" id="view-master">
+    <div id="master-root"></div>
+  </section>
+
+  <!-- 仕入 -->
+  <section class="view" id="view-purchase">
+    <div id="purchase-root"></div>
+  </section>
+
+  <!-- 在庫・賞味期限 -->
+  <section class="view" id="view-inventory">
+    <div id="inventory-root"></div>
+  </section>
+
+  <!-- 販売 -->
+  <section class="view" id="view-sales">
+    <div id="sales-root"></div>
+  </section>
+
+  <!-- 配送 -->
+  <section class="view" id="view-delivery">
+    <div id="delivery-root"></div>
+  </section>
+
+  <!-- 回収 -->
+  <section class="view" id="view-collection">
+    <div id="collection-root"></div>
+  </section>
+
   <footer class="io">
     <div class="btn-row" style="justify-content:center;">
       <button class="btn secondary" id="export-btn">JSONエクスポート</button>
@@ -571,11 +691,10 @@
 
   // ---------- ナビゲーション ----------
   const navButtons = document.querySelectorAll("nav button");
-  const views = {
-    add: document.getElementById("view-add"),
-    list: document.getElementById("view-list"),
-    summary: document.getElementById("view-summary"),
-  };
+  const views = {};
+  document.querySelectorAll("section.view").forEach((sec) => {
+    views[sec.id.replace("view-", "")] = sec;
+  });
   navButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       navButtons.forEach((b) => b.classList.remove("active"));
@@ -584,6 +703,7 @@
       views[btn.dataset.view].classList.add("active");
       if (btn.dataset.view === "list") renderList();
       if (btn.dataset.view === "summary") renderSummary();
+      document.dispatchEvent(new CustomEvent("view:activated", { detail: { view: btn.dataset.view } }));
     });
   });
 
@@ -1039,5 +1159,6 @@
   renderSummary();
 })();
 </script>
+<script src="/app.js" defer></script>
 </body>
 </html>

@@ -1,0 +1,13 @@
+{
+  "name": "coffee-shop-manager",
+  "version": "1.0.0",
+  "private": true,
+  "description": "コーヒー抽出記録＆仕入・在庫・賞味期限・販売・配送・回収管理アプリ",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}
