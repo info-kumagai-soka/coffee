@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Co-kien（こうけん）｜草加市の地域密着型オフィス定期便</title>
+<meta name="description" content="Co-kien（こうけん）は、草加市内の作り手がつくるお菓子とコーヒーをオフィスに届ける地域密着型サービスです。福利厚生を通じて、地域とのつながりを日々の消費行動から実現します。" />
+
+<!-- Google Fonts: 見出し=Shippori Mincho（あたたかみのある明朝）／本文=Noto Sans JP -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --paper: #F8F3E7;
+    --surface: #FFFFFF;
+    --surface-alt: #F0E8D6;
+    --ink: #2B2620;
+    --ink-muted: #6E6455;
+    --green: #3C5A45;
+    --green-dark: #28402F;
+    --green-light: #6B8A73;
+    --terracotta: #C1633D;
+    --terracotta-dark: #9E4E30;
+    --terracotta-light: #DFA98B;
+    --line: #E3D6BE;
+    --font-heading: "Shippori Mincho", "Hiragino Mincho ProN", serif;
+    --font-body: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: var(--font-body);
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.8;
+    -webkit-font-smoothing: antialiased;
+  }
+  img, svg { display: block; }
+  a { color: inherit; text-decoration: none; }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+  .wrap-narrow {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-heading);
+    margin: 0;
+    color: var(--ink);
+  }
+
+  .eyebrow {
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    color: var(--terracotta);
+    font-weight: 700;
+    margin: 0 0 10px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font-weight: 500;
+    padding: 15px 34px;
+    font-size: 1.02rem;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    border: none;
+    cursor: pointer;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary {
+    background: var(--terracotta);
+    color: var(--paper);
+    box-shadow: 0 8px 20px rgba(158, 78, 48, 0.25);
+  }
+  .btn-primary:hover { background: var(--terracotta-dark); }
+  .btn-ghost {
+    background: var(--green);
+    color: var(--paper);
+    padding: 11px 24px;
+    font-size: 0.9rem;
+  }
+  .btn-ghost:hover { background: var(--green-dark); }
+
+  /* ---------- ヘッダー ---------- */
+  header.site {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(248, 243, 231, 0.92);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--line);
+  }
+  header.site .wrap {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    font-family: var(--font-heading);
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--green-dark);
+    letter-spacing: 0.03em;
+  }
+  .logo .dot { color: var(--terracotta); }
+  header.site .btn-ghost { display: none; }
+  @media (min-width: 640px) {
+    header.site .btn-ghost { display: inline-flex; }
+  }
+
+  /* ---------- ① ヒーロー ---------- */
+  section.hero {
+    position: relative;
+    overflow: hidden;
+    padding: 88px 0 100px;
+    text-align: center;
+  }
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.4;
+    z-index: 0;
+  }
+  .blob.b1 { width: 340px; height: 340px; background: var(--terracotta-light); top: -90px; right: -90px; }
+  .blob.b2 { width: 300px; height: 300px; background: var(--green-light); bottom: -100px; left: -110px; }
+  .hero-inner { position: relative; z-index: 1; }
+  .hero h1 {
+    font-size: 2.1rem;
+    font-weight: 700;
+    line-height: 1.55;
+    margin-bottom: 26px;
+  }
+  .hero p.sub {
+    font-size: 1.02rem;
+    color: var(--ink-muted);
+    max-width: 620px;
+    margin: 0 auto 40px;
+  }
+  @media (min-width: 640px) {
+    section.hero { padding: 120px 0 130px; }
+    .hero h1 { font-size: 2.9rem; }
+    .hero p.sub { font-size: 1.1rem; }
+  }
+
+  /* ---------- ② 課題提起 ---------- */
+  section.problem { background: var(--surface-alt); }
+  section.problem .inner {
+    padding: 72px 0;
+    text-align: center;
+  }
+  .quote-mark {
+    font-family: var(--font-heading);
+    font-size: 3.4rem;
+    color: var(--green-light);
+    line-height: 1;
+    margin-bottom: 12px;
+  }
+  section.problem .lead {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    line-height: 1.9;
+    margin-bottom: 34px;
+  }
+  section.problem .note {
+    font-size: 0.94rem;
+    color: var(--ink-muted);
+    line-height: 1.9;
+  }
+  @media (min-width: 640px) {
+    section.problem .lead { font-size: 1.5rem; }
+  }
+
+  /* ---------- ③ サービス内容 ---------- */
+  section.service { padding: 80px 0; }
+  .section-head { text-align: center; margin-bottom: 52px; }
+  .section-head h2 { font-size: 1.55rem; font-weight: 700; }
+
+  .cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  @media (min-width: 860px) {
+    .cards { grid-template-columns: repeat(3, 1fr); gap: 28px; }
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 32px 28px;
+  }
+  .icon-badge {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--surface-alt);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  .icon-badge svg { width: 26px; height: 26px; stroke: var(--green); }
+  .card h3 { font-size: 1.12rem; font-weight: 700; margin-bottom: 12px; }
+  .card p { font-size: 0.94rem; color: var(--ink-muted); margin: 0; }
+
+  /* ---------- ④ 地域循環の価値 ---------- */
+  section.value {
+    background: var(--green-dark);
+    color: var(--paper);
+    text-align: center;
+    padding: 80px 0;
+  }
+  section.value .eyebrow { color: var(--terracotta-light); }
+  section.value h2 { color: var(--paper); font-size: 1.55rem; font-weight: 700; margin-bottom: 44px; }
+  .stat-number {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 4.2rem;
+    line-height: 1;
+  }
+  .stat-number .pct { font-size: 2rem; vertical-align: top; margin-left: 4px; }
+  .stat-caption {
+    font-size: 0.92rem;
+    color: rgba(248, 243, 231, 0.72);
+    margin: 16px 0 46px;
+  }
+  section.value .lead { font-size: 1.08rem; line-height: 1.9; margin-bottom: 14px; }
+  section.value .note { font-size: 0.92rem; color: rgba(248, 243, 231, 0.82); line-height: 1.9; }
+  @media (min-width: 640px) {
+    .stat-number { font-size: 5.5rem; }
+  }
+
+  /* ---------- ⑤ 導入の流れ ---------- */
+  section.flow { padding: 80px 0; }
+  .steps {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+  .step {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+  }
+  .step-num {
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--green);
+    color: var(--paper);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .step h3 { font-size: 1.02rem; font-weight: 700; margin-bottom: 6px; }
+  .step p { font-size: 0.9rem; color: var(--ink-muted); margin: 0; }
+
+  @media (min-width: 860px) {
+    .steps {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+    .steps::before {
+      content: "";
+      position: absolute;
+      top: 26px;
+      left: 12%;
+      right: 12%;
+      height: 2px;
+      background: var(--line);
+      z-index: 0;
+    }
+    .step { flex-direction: column; align-items: center; text-align: center; }
+  }
+
+  /* ---------- ⑥ お問い合わせ ---------- */
+  section.contact {
+    background: var(--surface-alt);
+    text-align: center;
+    padding: 84px 0;
+  }
+  section.contact h2 { font-size: 1.55rem; font-weight: 700; margin-bottom: 18px; }
+  section.contact p { font-size: 0.96rem; color: var(--ink-muted); margin: 0 0 38px; line-height: 1.9; }
+
+  /* ---------- フッター ---------- */
+  footer.site {
+    border-top: 1px solid var(--line);
+    background: var(--paper);
+  }
+  footer.site .wrap {
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+  }
+  @media (min-width: 640px) {
+    footer.site .wrap { flex-direction: row; }
+  }
+  footer.site .logo { font-size: 1.05rem; }
+</style>
+</head>
+<body>
+
+<!-- ヘッダー -->
+<header class="site">
+  <div class="wrap">
+    <a href="#hero" class="logo">Co-kien<span class="dot">.</span></a>
+    <a href="#contact" class="btn btn-ghost">導入について問い合わせる</a>
+  </div>
+</header>
+
+<main>
+
+  <!-- ① ヒーロー -->
+  <section class="hero" id="hero">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="wrap hero-inner">
+      <p class="eyebrow" style="letter-spacing:0.14em;">埼玉県草加市発 ・ 地域密着型オフィス定期便</p>
+      <h1>あなたのオフィスに、<br>草加の&ldquo;顔&rdquo;が届く。</h1>
+      <p class="sub">
+        Co-kien（こうけん）は、草加市内の作り手がつくるお菓子とコーヒーを、
+        オフィスに届ける地域密着型サービスです。
+      </p>
+      <a href="#contact" class="btn btn-primary">導入について問い合わせる</a>
+    </div>
+  </section>
+
+  <!-- ② 課題提起 -->
+  <section class="problem" id="problem">
+    <div class="wrap-narrow inner">
+      <div class="quote-mark">&ldquo;</div>
+      <p class="lead">
+        毎日通うオフィス。でも、そこで働く人たちが、<br>
+        自分たちの住む・働く地域のことを、どれだけ知っているでしょうか。
+      </p>
+      <p class="note">
+        便利さと引き換えに、地域とのつながりは薄くなっていきます。<br>
+        Co-kienは、その分断に小さな橋をかけるサービスです。
+      </p>
+    </div>
+  </section>
+
+  <!-- ③ サービス内容 -->
+  <section class="service" id="service">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">SERVICE</p>
+        <h2>サービス内容</h2>
+      </div>
+
+      <div class="cards">
+        <!-- 何を届けるか -->
+        <div class="card">
+          <div class="icon-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.25 7.5l-8.25-4.5L3.75 7.5m16.5 0l-8.25 4.5m8.25-4.5v9l-8.25 4.5m0-9L3.75 7.5m8.25 4.5v9m-8.25-13.5v9l8.25 4.5" />
+            </svg>
+          </div>
+          <h3>何を届けるか</h3>
+          <p>草加市内の生産者がつくるお菓子やコーヒーを、定期的にオフィスへお届けします。休憩時間に手に取る一つのお菓子が、地域を知るきっかけになります。</p>
+        </div>
+
+        <!-- 仕組み(BtoBtoE) -->
+        <div class="card">
+          <div class="icon-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="15" cy="6.75" r="2.25" />
+              <circle cx="9" cy="17.25" r="2.25" />
+              <circle cx="18" cy="17.25" r="2.25" />
+              <path d="M8.25 15.75l4.5-6m2.379 6.128L12 9.75" />
+            </svg>
+          </div>
+          <h3>仕組み（BtoBtoE）</h3>
+          <p>企業の福利厚生予算を通じて導入いただき、実際に商品が届くのはオフィスで働く一人ひとり。会社にとっては福利厚生の充実、働く人にとっては小さな地域とのつながりになります。</p>
+        </div>
+
+        <!-- 続けやすい設計 -->
+        <div class="card">
+          <div class="icon-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+            </svg>
+          </div>
+          <h3>続けやすい設計</h3>
+          <p>定期便（サブスクリプション）形式で、都度の発注の手間なく続けられます。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ④ 地域循環の価値 -->
+  <section class="value" id="value">
+    <div class="wrap-narrow">
+      <p class="eyebrow">LOCAL ECONOMIC CIRCULATION</p>
+      <h2>地域循環の価値</h2>
+
+      <div class="stat-number">65.6<span class="pct">%</span></div>
+      <p class="stat-caption">草加市の域内経済循環率（県平均を上回る水準）</p>
+
+      <p class="lead">Co-kienは、この数字をさらに高めることを目指しています。</p>
+      <p class="note">
+        オフィスでの消費が地域の生産者に還元される仕組みをつくることで、<br>
+        「顔が見えるまちづくり」を、日々の消費行動から実現していきます。
+      </p>
+      <!-- ※出典データは草加市産業新成長戦略に準拠。実績・事例が公開可能になり次第、追記してください。 -->
+    </div>
+  </section>
+
+  <!-- ⑤ 導入の流れ -->
+  <section class="flow" id="flow">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">FLOW</p>
+        <h2>導入の流れ</h2>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div>
+            <h3>お問い合わせ</h3>
+            <p>まずはお気軽にご連絡ください。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div>
+            <h3>ヒアリング</h3>
+            <p>オフィスの人数・頻度・ご予算感などをお伺いします。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div>
+            <h3>プランのご提案</h3>
+            <p>貴社に合わせた内容・料金プランをご提案します。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div>
+            <h3>導入・配送スタート</h3>
+            <p>ご契約後、オフィスへの定期配送を開始します。</p>
+          </div>
+        </div>
+      </div>
+      <!-- ※各ステップの補足文言は、実際の営業フローが固まり次第、具体化してください。 -->
+    </div>
+  </section>
+
+  <!-- ⑥ お問い合わせ -->
+  <section class="contact" id="contact">
+    <div class="wrap-narrow">
+      <h2>お問い合わせ</h2>
+      <p>
+        Co-kienの導入にご興味をお持ちいただけましたら、<br>
+        お気軽にお問い合わせください。
+      </p>
+      <!-- TODO: Googleフォームの本番URLに差し替えてください（下記はプレースホルダーです） -->
+      <a href="https://forms.gle/REPLACE_WITH_YOUR_FORM_ID" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+        お問い合わせフォームへ
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <span class="logo">Co-kien</span>
+    <span>&copy; 2026 Co-kien. All rights reserved.</span>
+  </div>
+</footer>
+
+</body>
+</html>
